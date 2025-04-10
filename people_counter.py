@@ -183,3 +183,8 @@ def start_people_thread():
         video_thread = threading.Thread(target=process_video, daemon=True)
         video_thread.start()
         inference_started = True
+
+def stop_people_thread():
+    global running
+    running = False
+

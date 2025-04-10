@@ -193,3 +193,8 @@ def handle_flood_post(request):
         flood_thread.start()
 
     return redirect(url_for("flood_detection"))
+
+def stop_flood_thread():
+    global running
+    running = False
+

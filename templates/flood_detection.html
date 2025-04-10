@@ -26,9 +26,20 @@
   </div>
 </form>
 
-<form method="POST" action="/flood-start">
-  <button type="submit" class="btn btn-success">▶️ Start Flood Detection</button>
-</form>
+<div class="row mt-3">
+  <div class="col-md-6 d-grid">
+    <form method="POST" action="/flood-start">
+      <button type="submit" class="btn btn-success">▶️ Start Flood Detection</button>
+    </form>
+  </div>
+  <div class="col-md-6 d-grid">
+    <form method="POST" action="/flood-stop">
+      <button type="submit" class="btn btn-outline-secondary">🛑 Stop Flood Detection</button>
+    </form>
+  </div>
+</div>
+
+
 
 <div id="flood-alert" class="alert alert-secondary mt-3">
   Status: <strong id="flood-status">{{ flood_status }}</strong><br>

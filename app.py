@@ -69,5 +69,18 @@ def flood_stats():
         "level": flood_level
     })
 
+@app.route('/stop', methods=['POST'])
+def stop_people():
+    from people_counter import stop_people_thread
+    stop_people_thread()
+    return redirect(url_for('dashboard', alert_message="People Counter stopped."))
+
+@app.route('/flood-stop', methods=['POST'])
+def stop_flood():
+    from yolo import stop_flood_thread
+    stop_flood_thread()
+    return redirect(url_for('flood_detection', alert_message="Flood Detection stopped."))
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860)
