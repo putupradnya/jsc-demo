@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Public Space People Counting</h2>
+
+<form method="POST">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label>Video Source</label>
+      <select name="video_source" class="form-select">
+        {% for label, _ in video_options.items() %}
+          <option value="{{ label }}" {% if label == current_video %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label>Model</label>
+      <select name="model_choice" class="form-select">
+        {% for label, _ in model_options.items() %}
+          <option value="{{ label }}" {% if label == current_model %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label>Line Orientation</label>
+      <select name="line_orientation" class="form-select">
+        <option value="Horizontal" {% if line_orientation == "Horizontal" %}selected{% endif %}>Horizontal</option>
+        <option value="Vertical" {% if line_orientation == "Vertical" %}selected{% endif %}>Vertical</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label>Line Position (px)</label>
+      <input type="number" name="line_position" class="form-control" value="{{ line_position }}">
+    </div>
+  </div>
+  <div class="mt-3">
+    <button type="submit" class="btn btn-primary">🔄 Update</button>
+    <button formaction="/start" formmethod="POST" class="btn btn-success">▶️ Start</button>
+    <button formaction="/reset" formmethod="POST" class="btn btn-danger">🔁 Reset Counter</button>
+  </div>
+</form>
+
+<hr>
+<h4 class="mt-4">📊 Statistik Pengunjung</h4>
+<div class="row text-center">
+  <div class="col-md-4 mb-3">
+    <div class="card border-danger shadow">
+      <div class="card-body">
+        <h5 class="card-title text-danger">⬆️ Keluar</h5>
+        <h3 id="up">{{ up_count }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card border-success shadow">
+      <div class="card-body">
+        <h5 class="card-title text-success">⬇️ Masuk</h5>
+        <h3 id="down">{{ down_count }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card border-primary shadow">
+      <div class="card-body">
+        <h5 class="card-title text-primary">👥 Total</h5>
+        <h3 id="total">{{ total_visitor }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <canvas id="chart" style="max-height: 250px;"></canvas>
+  </div>
+  <div class="col-md-6">
+    <img src="/video_feed" class="img-fluid rounded border">
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let labels = [], upData = [], downData = [], totalData = [];
+setInterval(() => {
+  fetch('/stats')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("up").innerText = data.up_count;
+      document.getElementById("down").innerText = data.down_count;
+      document.getElementById("total").innerText = data.total_visitor;
+
+      let now = new Date().toLocaleTimeString();
+      labels.push(now); if (labels.length > 30) labels.shift();
+      upData.push(data.up_count); if (upData.length > 30) upData.shift();
+      downData.push(data.down_count); if (downData.length > 30) downData.shift();
+      totalData.push(data.total_visitor); if (totalData.length > 30) totalData.shift();
+      chart.update();
+    });
+}, 1000);
+
+const ctx = document.getElementById('chart').getContext('2d');
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Masuk', data: downData, borderColor: 'green', fill: false },
+      { label: 'Keluar', data: upData, borderColor: 'red', fill: false },
+      { label: 'Total', data: totalData, borderColor: 'blue', fill: false }
+    ]
+  },
+  options: { responsive: true, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

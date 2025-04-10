@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Flood Water Level Detection</h2>
+
+<form method="POST" class="mb-3">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-4">
+      <label>🎥 Video Source</label>
+      <select name="video_source" class="form-select">
+        {% for label, _ in video_options.items() %}
+          <option value="{{ label }}" {% if label == current_video %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label>🧠 Model</label>
+      <select name="model_choice" class="form-select">
+        {% for label, _ in model_options.items() %}
+          <option value="{{ label }}" {% if label == current_model %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4 d-grid">
+      <button type="submit" class="btn btn-primary">🔄 Update</button>
+    </div>
+  </div>
+</form>
+
+<form method="POST" action="/flood-start">
+  <button type="submit" class="btn btn-success">▶️ Start Flood Detection</button>
+</form>
+
+<div id="flood-alert" class="alert alert-secondary mt-3">
+  Status: <strong id="flood-status">{{ flood_status }}</strong><br>
+  Level: <span id="flood-level">{{ flood_level }} meter</span>
+</div>
+
+
+<img src="/flood-feed" class="img-fluid rounded border mt-3">
+
+<script>
+  function refreshFloodStats() {
+    fetch('/flood-stats')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("flood-status").innerText = data.status;
+        document.getElementById("flood-level").innerText = data.level + " meter";
+        let alert = document.getElementById("flood-alert");
+        alert.className = "alert mt-3 " + (data.status === "WARNING" ? "alert-danger" : "alert-success");
+      });
+  }
+  setInterval(refreshFloodStats, 1000);
+</script>
+
+{% endblock %}
