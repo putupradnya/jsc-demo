@@ -6,6 +6,7 @@ from ultralytics import YOLO
 from flask import redirect, url_for
 from scipy.spatial import distance
 from scipy.optimize import linear_sum_assignment
+from utils.alert import send_telegram_message, send_whatsapp_alert
 
 # Global vars
 VIDEO_OPTIONS = {
@@ -148,6 +149,25 @@ def process_video():
             cv2.putText(frame, "Masuk", (line_position + 10, 30), font, 0.6, (0, 255, 0), 2)
             cv2.putText(frame, "Keluar", (line_position - 70, 30), font, 0.6, (0, 0, 255), 2)
 
+        # --- Hitung total pengunjung
+        total_visitor = down_count - up_count
+
+        # --- Alerting
+        if total_visitor >= 5 and not alert_50_sent:
+            message = f"⚠️ Alert! Pengunjung mencapai 50% kapasitas\nTotal saat ini: {total_visitor} orang"
+            screenshot_path = "screenshot_50.jpg"
+            cv2.imwrite(screenshot_path, frame)
+            send_telegram_message(message, screenshot_path)
+            send_whatsapp_alert(message)
+            alert_50_sent = True
+
+        elif total_visitor >= 7 and not alert_75_sent:
+            message = f"🚨 Alert! Pengunjung mencapai 75% kapasitas\nTotal saat ini: {total_visitor} orang"
+            screenshot_path = "screenshot_75.jpg"
+            cv2.imwrite(screenshot_path, frame)
+            send_telegram_message(message, screenshot_path)
+            send_whatsapp_alert(message)
+            alert_75_sent = True
 
         with frame_lock:
             latest_frame = cv2.imencode('.jpg', frame)[1].tobytes()

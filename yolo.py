@@ -10,6 +10,7 @@ import requests
 import time
 from dotenv import load_dotenv
 from flask import redirect, url_for
+from utils.alert import send_whatsapp_alert
 
 load_dotenv()
 
@@ -132,6 +133,12 @@ def run_flood_detection_stream():
                 now = time.time()
                 if last_alert_time is None or (now - last_alert_time) >= 10:
                     send_telegram_alert(dist, warningLevel, pil_image)
+
+                    # message to whatsapp
+                    message_body = f"""⚠️ *ALERT!*
+                    Ketinggian air mencapai *{dist:.2f} meter*
+                    Status: *WARNING 🚨*"""
+                    send_whatsapp_alert(message_body)
                     last_alert_time = now
         else:
             flood_status = "SAFE"
